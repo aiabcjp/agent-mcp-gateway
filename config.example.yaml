@@ -1,0 +1,75 @@
+# QA MCP Gateway Configuration
+server:
+  listen: ":443"
+  domain: "qa-gateway.yourcompany.com"
+  tls: auto    # "auto" for Let's Encrypt, "off" for plain HTTP
+
+auth:
+  provider: okta
+  okta:
+    issuer: "https://company.okta.com/oauth2/default"
+    client_id: "0oa..."
+    scopes: ["openid", "profile", "email", "groups"]
+  rbac:
+    - group: "qa-team"
+      resources: ["qa-redis", "qa-mongo", "qa-mysql", "qa-elasticsearch"]
+      permissions: [read]
+    - group: "qa-admin"
+      resources: ["*"]
+      permissions: [read, write]
+
+wireguard:
+  private_key: "server-private-key-base64"
+  address: "10.0.1.100/32"
+  dns: "10.0.1.1"
+  peer:
+    public_key: "peer-public-key-base64"
+    endpoint: "qa-vpn.internal.com:51820"
+    allowed_ips: "10.0.1.0/24"
+    keepalive: 25
+
+resources:
+  qa-redis:
+    type: redis
+    host: "10.0.1.50:6379"
+    password: "${REDIS_PASSWORD}"
+    description: "QA Redis cache"
+    read_only: true
+    allowed_ops: [get, set, keys, del, ttl, info, scan]
+  qa-mongo:
+    type: mongodb
+    uri: "mongodb://ro_user:${MONGO_PASSWORD}@10.0.1.51:27017/qa_db"
+    description: "QA MongoDB primary"
+    read_only: true
+    allowed_ops: [find, aggregate, count, listCollections, distinct]
+  qa-mysql:
+    type: mysql
+    dsn: "readonly:${MYSQL_PASSWORD}@tcp(10.0.1.52:3306)/qa_app"
+    description: "QA MySQL application database"
+    read_only: true
+    allowed_ops: [select, show, describe, explain]
+  qa-elasticsearch:
+    type: elasticsearch
+    url: "http://10.0.1.53:9200"
+    description: "QA Elasticsearch logs"
+    read_only: true
+    allowed_ops: [search, cat, indices, count]
+
+clients:
+  version:
+    latest: "1.0.0"
+    minimum: "1.0.0"
+    download_url: "https://releases.company.com/qa-gateway/"
+  wireguard:
+    pool: "10.0.1.200/24"
+    auto_provision: true
+
+logging:
+  level: info
+  file: "/var/log/qa-gateway/access.log"
+  format: json
+
+metering:
+  enabled: true
+  storage: sqlite
+  db_path: "/var/lib/qa-gateway/meter.db"
