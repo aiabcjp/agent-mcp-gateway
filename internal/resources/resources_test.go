@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"testing"
 
-	"agent-gateway/internal/config"
+	"agent-mcp-gateway/internal/config"
 )
 
 // mockResource is a test double that implements the Resource interface.

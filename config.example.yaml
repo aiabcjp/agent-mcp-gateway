@@ -1,7 +1,7 @@
 # QA MCP Gateway Configuration
 server:
   listen: ":443"
-  domain: "agent-gateway.yourcompany.com"
+  domain: "agent-mcp-gateway.yourcompany.com"
   tls: auto    # "auto" for Let's Encrypt, "off" for plain HTTP
 
 auth:
@@ -59,17 +59,17 @@ clients:
   version:
     latest: "1.0.0"
     minimum: "1.0.0"
-    download_url: "https://releases.company.com/agent-gateway/"
+    download_url: "https://releases.company.com/agent-mcp-gateway/"
   wireguard:
     pool: "10.0.1.200/24"
     auto_provision: true
 
 logging:
   level: info
-  file: "/var/log/agent-gateway/access.log"
+  file: "/var/log/agent-mcp-gateway/access.log"
   format: json
 
 metering:
   enabled: true
   storage: sqlite
-  db_path: "/var/lib/agent-gateway/meter.db"
+  db_path: "/var/lib/agent-mcp-gateway/meter.db"

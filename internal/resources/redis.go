@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"agent-gateway/internal/config"
+	"agent-mcp-gateway/internal/config"
 
 	"github.com/redis/go-redis/v9"
 )

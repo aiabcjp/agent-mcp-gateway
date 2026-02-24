@@ -12,10 +12,10 @@ import (
 	gomcpserver "github.com/mark3labs/mcp-go/server"
 	"golang.org/x/crypto/acme/autocert"
 
-	"agent-gateway/internal/auth"
-	"agent-gateway/internal/config"
-	"agent-gateway/internal/metering"
-	"agent-gateway/internal/resources"
+	"agent-mcp-gateway/internal/auth"
+	"agent-mcp-gateway/internal/config"
+	"agent-mcp-gateway/internal/metering"
+	"agent-mcp-gateway/internal/resources"
 )
 
 // Server wraps an HTTP server with middleware for MCP gateway operation.

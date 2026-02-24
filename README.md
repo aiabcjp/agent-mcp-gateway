@@ -1,4 +1,4 @@
-# QA MCP Gateway
+# Agent MCP Gateway
 
 **Version:** 1.0.0 | **Go:** 1.22+ | **License:** MIT | **Protocol:** MCP (Model Context Protocol)
 
@@ -6,9 +6,9 @@
 
 ## Overview
 
-QA MCP Gateway is a secure gateway server that exposes internal QA database resources to AI agents through the Model Context Protocol (MCP). It enables AI-powered workflows to query Redis, MongoDB, MySQL, and Elasticsearch backends hosted on private networks, without requiring direct network access from the AI agent or its host machine.
+Agent MCP Gateway is a secure gateway server that exposes internal database resources to AI agents through the Model Context Protocol (MCP). It enables AI-powered workflows to query Redis, MongoDB, MySQL, and Elasticsearch backends hosted on private networks, without requiring direct network access from the AI agent or its host machine.
 
-The gateway embeds a WireGuard userspace tunnel (netstack) to reach internal QA infrastructure. This approach runs entirely in userspace with no root privileges, no TUN device, and no kernel module required. All traffic between the gateway and backend databases flows through an encrypted WireGuard tunnel over the internal network.
+The gateway embeds a WireGuard userspace tunnel (netstack) to reach internal infrastructure. This approach runs entirely in userspace with no root privileges, no TUN device, and no kernel module required. All traffic between the gateway and backend databases flows through an encrypted WireGuard tunnel over the internal network.
 
 Authentication is handled through Okta SSO using OIDC with PKCE. Authorization follows a role-based access control (RBAC) model driven by Okta group memberships, allowing fine-grained control over which teams can access which resources and what operations they may perform. All usage is metered and recorded in a local SQLite database for auditing and chargeback.
 
@@ -24,7 +24,7 @@ Authentication is handled through Okta SSO using OIDC with PKCE. Authorization f
       │ localhost:3000/mcp          │  └──────────┘  └──────────────────┘  │
       v                             │                                      │
 ┌─────────────┐                     │  ┌──────────────────────────────────┐│
-│  agent-gateway │  -- SSO Login --->  │  │     MCP Tool Handlers           ││
+│ agent-mcp-gateway│  -- SSO Login --->  │  │     MCP Tool Handlers           ││
 │   connect   │  -- Bootstrap --->  │  │  list_resources | redis_query   ││
 │  (client)   │                     │  │  mongo_query | mysql_query      ││
 └─────────────┘                     │  │  es_search   | get_usage        ││
@@ -41,20 +41,20 @@ Authentication is handled through Okta SSO using OIDC with PKCE. Authorization f
                         ┌───────┐ ┌─────────┐ ┌─────────┐ ┌──────┐     │
                         │ Redis │ │ MongoDB │ │  MySQL  │ │  ES  │     │
                         └───────┘ └─────────┘ └─────────┘ └──────┘     │
-                                    QA Internal Network                 │
+                                    Internal Network                 │
 ```
 
 ## Features
 
-- **MCP Protocol Support** -- Exposes QA databases as MCP tools over Streamable HTTP transport.
+- **MCP Protocol Support** -- Exposes databases as MCP tools over Streamable HTTP transport.
 - **Multi-Backend Support** -- Query Redis, MongoDB, MySQL, and Elasticsearch from a single gateway.
 - **WireGuard Userspace Tunnel** -- Embedded netstack-based WireGuard tunnel requires no root privileges, no TUN device, and no kernel modules.
 - **Okta SSO Authentication** -- OIDC with PKCE flow for secure, browser-based single sign-on.
 - **Role-Based Access Control** -- Map Okta groups to resource permissions with read/write granularity.
 - **Operation Whitelisting** -- Each resource defines an explicit list of allowed operations.
-- **Read-Only Mode** -- Resources can be locked to read-only access to protect QA data integrity.
+- **Read-Only Mode** -- Resources can be locked to read-only access to protect data integrity.
 - **Usage Metering** -- All queries are recorded in a local SQLite database for auditing and usage tracking.
-- **Client/Server Architecture** -- `agent-gateway serve` runs the gateway server; `agent-gateway connect` provides a local MCP proxy for AI agents.
+- **Client/Server Architecture** -- `agent-mcp-gateway serve` runs the gateway server; `agent-mcp-gateway connect` provides a local MCP proxy for AI agents.
 - **Auto TLS** -- Automatic certificate provisioning via Let's Encrypt.
 - **Docker Support** -- Multi-stage Dockerfile for minimal production images.
 - **Environment Variable Expansion** -- Secrets in configuration files can reference environment variables with `${VAR}` syntax.
@@ -74,7 +74,7 @@ Authentication is handled through Okta SSO using OIDC with PKCE. Authorization f
 make build
 ```
 
-The binary is written to `bin/agent-gateway`.
+The binary is written to `bin/agent-mcp-gateway`.
 
 ### Configure
 
@@ -93,7 +93,7 @@ export MYSQL_PASSWORD="your-mysql-password"
 ### Run the Server
 
 ```bash
-./bin/agent-gateway serve --config config.yaml
+./bin/agent-mcp-gateway serve --config config.yaml
 ```
 
 ### Connect a Client
@@ -101,7 +101,7 @@ export MYSQL_PASSWORD="your-mysql-password"
 On a developer or CI machine, run the client to create a local MCP endpoint:
 
 ```bash
-./bin/agent-gateway connect --server https://agent-gateway.example.com
+./bin/agent-mcp-gateway connect --server https://agent-mcp-gateway.example.com
 ```
 
 This opens a browser for Okta SSO login, then starts a local MCP proxy on `localhost:3000/mcp` that AI agents can connect to.
@@ -200,25 +200,25 @@ make docker
 Or manually:
 
 ```bash
-docker build -t agent-gateway:latest .
+docker build -t agent-mcp-gateway:latest .
 ```
 
 ### Run with Docker
 
 ```bash
 docker run -d \
-  --name agent-gateway \
+  --name agent-mcp-gateway \
   -p 443:443 \
   -p 80:80 \
-  -v $(pwd)/config.yaml:/etc/agent-gateway/config.yaml:ro \
-  -v agent-gateway-data:/var/lib/agent-gateway \
+  -v $(pwd)/config.yaml:/etc/agent-mcp-gateway/config.yaml:ro \
+  -v agent-mcp-gateway-data:/var/lib/agent-mcp-gateway \
   -e REDIS_PASSWORD="secret" \
   -e MONGO_PASSWORD="secret" \
   -e MYSQL_PASSWORD="secret" \
-  agent-gateway:latest
+  agent-mcp-gateway:latest
 ```
 
-The container runs as a non-root user (`gateway`, UID 1000). The metering SQLite database is stored in the `agent-gateway-data` volume at `/var/lib/agent-gateway/meter.db`.
+The container runs as a non-root user (`gateway`, UID 1000). The metering SQLite database is stored in the `agent-mcp-gateway-data` volume at `/var/lib/agent-mcp-gateway/meter.db`.
 
 ### Docker Compose
 
@@ -226,14 +226,14 @@ For production deployments, create a `docker-compose.yaml`:
 
 ```yaml
 services:
-  agent-gateway:
+  agent-mcp-gateway:
     build: .
     ports:
       - "443:443"
       - "80:80"
     volumes:
-      - ./config.yaml:/etc/agent-gateway/config.yaml:ro
-      - gateway-data:/var/lib/agent-gateway
+      - ./config.yaml:/etc/agent-mcp-gateway/config.yaml:ro
+      - gateway-data:/var/lib/agent-mcp-gateway
     env_file:
       - .env
     restart: unless-stopped

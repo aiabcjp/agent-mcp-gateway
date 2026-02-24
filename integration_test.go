@@ -1,5 +1,5 @@
 // Package integration_test provides end-to-end integration tests for the
-// agent-gateway. It starts a real HTTP server with mock auth and exercises
+// agent-mcp-gateway. It starts a real HTTP server with mock auth and exercises
 // the MCP protocol flow including authentication, tool discovery, and tool
 // execution.
 package integration_test
@@ -17,11 +17,11 @@ import (
 	"testing"
 	"time"
 
-	"agent-gateway/internal/auth"
-	"agent-gateway/internal/config"
-	"agent-gateway/internal/mcp"
-	"agent-gateway/internal/metering"
-	"agent-gateway/internal/resources"
+	"agent-mcp-gateway/internal/auth"
+	"agent-mcp-gateway/internal/config"
+	"agent-mcp-gateway/internal/mcp"
+	"agent-mcp-gateway/internal/metering"
+	"agent-mcp-gateway/internal/resources"
 
 	gomcpserver "github.com/mark3labs/mcp-go/server"
 )
@@ -135,7 +135,7 @@ func startTestServer(t *testing.T) (baseURL string, cleanup func()) {
 		t.Fatalf("failed to create resource manager: %v", err)
 	}
 
-	mcpSrv := mcp.NewServer("agent-gateway-test", "0.0.0-test", mgr, authz, meter, logger)
+	mcpSrv := mcp.NewServer("agent-mcp-gateway-test", "0.0.0-test", mgr, authz, meter, logger)
 
 	mux := http.NewServeMux()
 	streamableServer := gomcpserver.NewStreamableHTTPServer(mcpSrv)
@@ -326,7 +326,7 @@ func TestInteg_MCPInitialize(t *testing.T) {
 	if status != 200 {
 		t.Fatalf("expected 200, got %d: %s", status, body)
 	}
-	if !strings.Contains(body, "agent-gateway-test") {
+	if !strings.Contains(body, "agent-mcp-gateway-test") {
 		t.Fatalf("expected server name in response, got: %s", body)
 	}
 }

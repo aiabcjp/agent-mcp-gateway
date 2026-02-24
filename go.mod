@@ -1,4 +1,4 @@
-module agent-gateway
+module agent-mcp-gateway
 
 go 1.24.0
 

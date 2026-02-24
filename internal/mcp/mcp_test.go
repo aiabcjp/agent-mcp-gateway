@@ -10,9 +10,9 @@ import (
 
 	gomcp "github.com/mark3labs/mcp-go/mcp"
 
-	"agent-gateway/internal/auth"
-	"agent-gateway/internal/metering"
-	"agent-gateway/internal/resources"
+	"agent-mcp-gateway/internal/auth"
+	"agent-mcp-gateway/internal/metering"
+	"agent-mcp-gateway/internal/resources"
 )
 
 // ---------------------------------------------------------------------------

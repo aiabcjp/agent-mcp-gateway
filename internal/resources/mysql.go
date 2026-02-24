@@ -7,7 +7,7 @@ import (
 	"net"
 	"strings"
 
-	"agent-gateway/internal/config"
+	"agent-mcp-gateway/internal/config"
 
 	"github.com/go-sql-driver/mysql"
 )

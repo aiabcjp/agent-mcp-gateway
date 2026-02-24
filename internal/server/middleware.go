@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"agent-gateway/internal/auth"
+	"agent-mcp-gateway/internal/auth"
 )
 
 // authMiddleware returns an http.Handler that extracts and verifies the Bearer

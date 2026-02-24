@@ -16,11 +16,11 @@ import (
 	"github.com/mark3labs/mcp-go/client/transport"
 	gomcpserver "github.com/mark3labs/mcp-go/server"
 
-	"agent-gateway/internal/auth"
-	"agent-gateway/internal/config"
-	"agent-gateway/internal/mcp"
-	"agent-gateway/internal/metering"
-	"agent-gateway/internal/resources"
+	"agent-mcp-gateway/internal/auth"
+	"agent-mcp-gateway/internal/config"
+	"agent-mcp-gateway/internal/mcp"
+	"agent-mcp-gateway/internal/metering"
+	"agent-mcp-gateway/internal/resources"
 )
 
 type staticAuth struct{ tokens map[string]*auth.Claims }
@@ -80,7 +80,7 @@ func main() {
 		return nil, fmt.Errorf("no backend")
 	}
 	mgr, _ := resources.NewManager(cfg.Resources, failDial, logger)
-	mcpSrv := mcp.NewServer("agent-gateway", "1.0.0", mgr, authz, &noopMeter{}, logger)
+	mcpSrv := mcp.NewServer("agent-mcp-gateway", "1.0.0", mgr, authz, &noopMeter{}, logger)
 
 	mux := http.NewServeMux()
 	mux.Handle("/mcp", authMW(authn, gomcpserver.NewStreamableHTTPServer(mcpSrv)))

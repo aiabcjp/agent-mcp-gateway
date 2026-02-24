@@ -1,4 +1,4 @@
-// Package main provides the CLI entry point for the agent-gateway binary. It uses
+// Package main provides the CLI entry point for the agent-mcp-gateway binary. It uses
 // Cobra to expose serve, connect, update, and version sub-commands.
 package main
 
@@ -13,14 +13,14 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"agent-gateway/internal/auth"
-	"agent-gateway/internal/client"
-	"agent-gateway/internal/config"
-	"agent-gateway/internal/mcp"
-	"agent-gateway/internal/metering"
-	"agent-gateway/internal/resources"
-	"agent-gateway/internal/server"
-	"agent-gateway/internal/tunnel"
+	"agent-mcp-gateway/internal/auth"
+	"agent-mcp-gateway/internal/client"
+	"agent-mcp-gateway/internal/config"
+	"agent-mcp-gateway/internal/mcp"
+	"agent-mcp-gateway/internal/metering"
+	"agent-mcp-gateway/internal/resources"
+	"agent-mcp-gateway/internal/server"
+	"agent-mcp-gateway/internal/tunnel"
 )
 
 // Version is set at build time via -ldflags.
@@ -31,7 +31,7 @@ var cfgFile string
 
 func main() {
 	rootCmd := &cobra.Command{
-		Use:   "agent-gateway",
+		Use:   "agent-mcp-gateway",
 		Short: "MCP gateway for secure QA resource access",
 	}
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "config.yaml", "config file path")
@@ -113,7 +113,7 @@ func serveCmd() *cobra.Command {
 			}
 
 			// 8. Create MCP server.
-			mcpSrv := mcp.NewServer("agent-gateway", Version, mgr, authz, meter, logger)
+			mcpSrv := mcp.NewServer("agent-mcp-gateway", Version, mgr, authz, meter, logger)
 
 			// 9. Create HTTP server.
 			httpSrv := server.New(cfg, mcpSrv, authn, meter, logger)
@@ -123,7 +123,7 @@ func serveCmd() *cobra.Command {
 			defer stop()
 
 			// 11. Start server.
-			logger.Info("starting agent-gateway", "version", Version)
+			logger.Info("starting agent-mcp-gateway", "version", Version)
 			return httpSrv.Start(ctx)
 		},
 	}
@@ -162,7 +162,7 @@ func versionCmd() *cobra.Command {
 		Use:   "version",
 		Short: "Print version information",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Printf("agent-gateway version %s\n", Version)
+			fmt.Printf("agent-mcp-gateway version %s\n", Version)
 		},
 	}
 }

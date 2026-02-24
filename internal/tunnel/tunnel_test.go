@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"agent-gateway/internal/config"
+	"agent-mcp-gateway/internal/config"
 )
 
 // ---------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-BINARY_NAME := agent-gateway
+BINARY_NAME := agent-mcp-gateway
 VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 LDFLAGS := -ldflags "-X main.Version=$(VERSION)"
 GOFLAGS := -trimpath
@@ -8,7 +8,7 @@ GOFLAGS := -trimpath
 all: lint test build
 
 build:
-	go build $(GOFLAGS) $(LDFLAGS) -o bin/$(BINARY_NAME) ./cmd/agent-gateway
+	go build $(GOFLAGS) $(LDFLAGS) -o bin/$(BINARY_NAME) ./cmd/agent-mcp-gateway
 
 test:
 	go test -race -cover ./...
