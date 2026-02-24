@@ -13,6 +13,7 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"os"
 	"net/http/httputil"
 	"net/url"
 	"os/exec"
@@ -29,6 +30,21 @@ import (
 type BootstrapResponse struct {
 	Resources []resources.ResourceInfo `json:"resources"`
 	Version   config.VersionConfig     `json:"version"`
+}
+
+// isHeadless returns true if no display is available (SSH session, container, CI).
+func isHeadless() bool {
+	// Check common indicators of headless environments.
+	if os.Getenv("SSH_CONNECTION") != "" || os.Getenv("SSH_CLIENT") != "" {
+		return true
+	}
+	if os.Getenv("DISPLAY") == "" && runtime.GOOS == "linux" {
+		return true
+	}
+	if os.Getenv("CI") != "" || os.Getenv("GITHUB_ACTIONS") != "" {
+		return true
+	}
+	return false
 }
 
 // Connect performs the full client connection flow:
@@ -326,6 +342,112 @@ func StartPKCEFlow(issuer, clientID string, scopes []string) (string, error) {
 	}
 
 	return tokenResp.AccessToken, nil
+}
+
+// StartDeviceCodeFlow initiates an OAuth 2.0 Device Authorization Grant (RFC 8628)
+// for headless machines without a browser. The user is shown a URL and a code to
+// enter on another device (phone, laptop) to authorize access.
+//
+// Flow:
+//  1. Request a device code from the authorization server.
+//  2. Display the verification URL and user code.
+//  3. Poll the token endpoint until the user authorizes or the code expires.
+func StartDeviceCodeFlow(issuer, clientID string, scopes []string) (string, error) {
+	// 1. Request device code.
+	deviceURL := strings.TrimRight(issuer, "/") + "/v1/device/authorize"
+	data := url.Values{
+		"client_id": {clientID},
+		"scope":     {strings.Join(scopes, " ")},
+	}
+
+	resp, err := http.PostForm(deviceURL, data)
+	if err != nil {
+		return "", fmt.Errorf("requesting device code: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("device authorization returned status %d", resp.StatusCode)
+	}
+
+	var deviceResp struct {
+		DeviceCode              string `json:"device_code"`
+		UserCode                string `json:"user_code"`
+		VerificationURI         string `json:"verification_uri"`
+		VerificationURIComplete string `json:"verification_uri_complete"`
+		ExpiresIn               int    `json:"expires_in"`
+		Interval                int    `json:"interval"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&deviceResp); err != nil {
+		return "", fmt.Errorf("decoding device code response: %w", err)
+	}
+
+	// 2. Display instructions to the user.
+	displayURL := deviceResp.VerificationURIComplete
+	if displayURL == "" {
+		displayURL = deviceResp.VerificationURI
+	}
+
+	fmt.Println()
+	fmt.Println("  To sign in, open this URL on any device:")
+	fmt.Printf("  %s\n", displayURL)
+	fmt.Println()
+	if deviceResp.VerificationURIComplete == "" {
+		fmt.Printf("  Then enter the code: %s\n", deviceResp.UserCode)
+		fmt.Println()
+	}
+
+	// 3. Poll for token.
+	interval := time.Duration(deviceResp.Interval) * time.Second
+	if interval < 5*time.Second {
+		interval = 5 * time.Second
+	}
+	deadline := time.Now().Add(time.Duration(deviceResp.ExpiresIn) * time.Second)
+
+	tokenURL := strings.TrimRight(issuer, "/") + "/v1/token"
+	for time.Now().Before(deadline) {
+		time.Sleep(interval)
+
+		tokenData := url.Values{
+			"grant_type":  {"urn:ietf:params:oauth:grant-type:device_code"},
+			"device_code": {deviceResp.DeviceCode},
+			"client_id":   {clientID},
+		}
+
+		tokenResp, err := http.PostForm(tokenURL, tokenData)
+		if err != nil {
+			continue // Network error, retry.
+		}
+
+		var result struct {
+			AccessToken string `json:"access_token"`
+			TokenType   string `json:"token_type"`
+			ExpiresIn   int    `json:"expires_in"`
+			Error       string `json:"error"`
+		}
+		if err := json.NewDecoder(tokenResp.Body).Decode(&result); err != nil {
+			tokenResp.Body.Close()
+			continue
+		}
+		tokenResp.Body.Close()
+
+		switch result.Error {
+		case "authorization_pending":
+			continue // User hasn't authorized yet.
+		case "slow_down":
+			interval += 5 * time.Second
+			continue
+		case "":
+			if result.AccessToken != "" {
+				fmt.Println("  Authenticated successfully!")
+				return result.AccessToken, nil
+			}
+		default:
+			return "", fmt.Errorf("device authorization error: %s", result.Error)
+		}
+	}
+
+	return "", fmt.Errorf("device code expired — please try again")
 }
 
 // openBrowser opens the given URL in the user's default browser.

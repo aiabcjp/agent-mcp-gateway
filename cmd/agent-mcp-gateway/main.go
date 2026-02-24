@@ -32,7 +32,7 @@ var cfgFile string
 func main() {
 	rootCmd := &cobra.Command{
 		Use:   "agent-mcp-gateway",
-		Short: "MCP gateway for secure QA resource access",
+		Short: "MCP gateway for secure internal resource access",
 	}
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "config.yaml", "config file path")
 

@@ -1,4 +1,4 @@
-# QA MCP Gateway Configuration
+# Agent MCP Gateway Configuration
 server:
   listen: ":443"
   domain: "agent-mcp-gateway.yourcompany.com"
@@ -11,10 +11,10 @@ auth:
     client_id: "0oa..."
     scopes: ["openid", "profile", "email", "groups"]
   rbac:
-    - group: "qa-team"
-      resources: ["qa-redis", "qa-mongo", "qa-mysql", "qa-elasticsearch"]
+    - group: "dev-team"
+      resources: ["redis-cache", "mongo-main", "mysql-app", "elasticsearch-logs"]
       permissions: [read]
-    - group: "qa-admin"
+    - group: "admin"
       resources: ["*"]
       permissions: [read, write]
 
@@ -24,34 +24,34 @@ wireguard:
   dns: "10.0.1.1"
   peer:
     public_key: "peer-public-key-base64"
-    endpoint: "qa-vpn.internal.com:51820"
+    endpoint: "vpn.internal.com:51820"
     allowed_ips: "10.0.1.0/24"
     keepalive: 25
 
 resources:
-  qa-redis:
+  redis-cache:
     type: redis
     host: "10.0.1.50:6379"
     password: "${REDIS_PASSWORD}"
-    description: "QA Redis cache"
+    description: "Redis cache"
     read_only: true
     allowed_ops: [get, set, keys, del, ttl, info, scan]
-  qa-mongo:
+  mongo-main:
     type: mongodb
     uri: "mongodb://ro_user:${MONGO_PASSWORD}@10.0.1.51:27017/qa_db"
-    description: "QA MongoDB primary"
+    description: "MongoDB primary"
     read_only: true
     allowed_ops: [find, aggregate, count, listCollections, distinct]
-  qa-mysql:
+  mysql-app:
     type: mysql
     dsn: "readonly:${MYSQL_PASSWORD}@tcp(10.0.1.52:3306)/qa_app"
-    description: "QA MySQL application database"
+    description: "MySQL application database"
     read_only: true
     allowed_ops: [select, show, describe, explain]
-  qa-elasticsearch:
+  elasticsearch-logs:
     type: elasticsearch
     url: "http://10.0.1.53:9200"
-    description: "QA Elasticsearch logs"
+    description: "Elasticsearch logs"
     read_only: true
     allowed_ops: [search, cat, indices, count]
 

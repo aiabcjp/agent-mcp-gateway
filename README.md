@@ -16,7 +16,7 @@ Authentication is handled through Okta SSO using OIDC with PKCE. Authorization f
 
 ```
 ┌─────────────┐     HTTPS/MCP      ┌──────────────────────────────────────┐
-│   AI Agent  │ <────────────────-> │          QA MCP Gateway              │
+│   AI Agent  │ <────────────────-> │          Agent MCP Gateway              │
 │  (Claude,   │    Streamable HTTP  │                                      │
 │   GPT, etc) │                     │  ┌──────────┐  ┌──────────────────┐  │
 └─────────────┘                     │  │ Okta OIDC │  │    RBAC Engine   │  │
@@ -65,7 +65,7 @@ Authentication is handled through Okta SSO using OIDC with PKCE. Authorization f
 
 - **Go 1.22+** for building from source
 - A **configuration file** based on `config.example.yaml`
-- A **WireGuard peer** on the QA network configured to accept connections from the gateway
+- A **WireGuard peer** on the internal network configured to accept connections from the gateway
 - An **Okta application** configured for OIDC with PKCE (SPA or Native type)
 
 ### Build
@@ -105,6 +105,41 @@ On a developer or CI machine, run the client to create a local MCP endpoint:
 ```
 
 This opens a browser for Okta SSO login, then starts a local MCP proxy on `localhost:3000/mcp` that AI agents can connect to.
+
+## Headless / No-Browser Authentication (Device Code Flow)
+
+When running on servers, containers, or SSH sessions without a browser, the client automatically detects the headless environment and uses the **OAuth 2.0 Device Authorization Grant** (RFC 8628) — the same approach used by GitHub CLI (`gh auth login`), Azure CLI, and AWS SSO:
+
+```
+$ agent-mcp-gateway connect --server https://gateway.example.com
+
+  To sign in, open this URL on any device:
+  https://gateway.example.com/device?user_code=ABCD-EFGH
+
+  Then enter the code: ABCD-EFGH
+
+  Waiting for authorization...
+  Authenticated successfully!
+```
+
+**How it works:**
+
+1. The CLI requests a short-lived device code from the identity provider
+2. A URL and user code are displayed in the terminal
+3. The user opens the URL on any device with a browser (phone, laptop)
+4. The gateway serves a verification page at `/device` where the user can copy the code and proceed to SSO login
+5. Once authorized, the CLI automatically detects success and proceeds to connect
+
+This means machines running the gateway never need a browser installed.
+
+## Agent Integration Guide
+
+For AI agents and developers integrating agents, see **[AGENT_GUIDE.md](AGENT_GUIDE.md)** which covers:
+
+- Available MCP tools with parameter details and examples
+- Connection options (local client vs. direct remote)
+- Best practices for agents (query limits, error handling)
+- Error response reference
 
 ## MCP Tools Reference
 
@@ -254,7 +289,7 @@ RBAC rules map Okta groups to resource permissions. Each tool invocation checks 
 
 ### Network Security
 
-The WireGuard tunnel encrypts all traffic between the gateway and QA backends. The tunnel runs in userspace via netstack, requiring no elevated privileges. Backend connection strings and passwords are resolved from environment variables at startup and never logged.
+The WireGuard tunnel encrypts all traffic between the gateway and internal backends. The tunnel runs in userspace via netstack, requiring no elevated privileges. Backend connection strings and passwords are resolved from environment variables at startup and never logged.
 
 ### Operation Whitelisting
 
