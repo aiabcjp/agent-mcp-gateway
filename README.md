@@ -24,7 +24,7 @@ Authentication is handled through Okta SSO using OIDC with PKCE. Authorization f
       │ localhost:3000/mcp          │  └──────────┘  └──────────────────┘  │
       v                             │                                      │
 ┌─────────────┐                     │  ┌──────────────────────────────────┐│
-│  qa-gateway │  -- SSO Login --->  │  │     MCP Tool Handlers           ││
+│  agent-gateway │  -- SSO Login --->  │  │     MCP Tool Handlers           ││
 │   connect   │  -- Bootstrap --->  │  │  list_resources | redis_query   ││
 │  (client)   │                     │  │  mongo_query | mysql_query      ││
 └─────────────┘                     │  │  es_search   | get_usage        ││
@@ -54,7 +54,7 @@ Authentication is handled through Okta SSO using OIDC with PKCE. Authorization f
 - **Operation Whitelisting** -- Each resource defines an explicit list of allowed operations.
 - **Read-Only Mode** -- Resources can be locked to read-only access to protect QA data integrity.
 - **Usage Metering** -- All queries are recorded in a local SQLite database for auditing and usage tracking.
-- **Client/Server Architecture** -- `qa-gateway serve` runs the gateway server; `qa-gateway connect` provides a local MCP proxy for AI agents.
+- **Client/Server Architecture** -- `agent-gateway serve` runs the gateway server; `agent-gateway connect` provides a local MCP proxy for AI agents.
 - **Auto TLS** -- Automatic certificate provisioning via Let's Encrypt.
 - **Docker Support** -- Multi-stage Dockerfile for minimal production images.
 - **Environment Variable Expansion** -- Secrets in configuration files can reference environment variables with `${VAR}` syntax.
@@ -74,7 +74,7 @@ Authentication is handled through Okta SSO using OIDC with PKCE. Authorization f
 make build
 ```
 
-The binary is written to `bin/qa-gateway`.
+The binary is written to `bin/agent-gateway`.
 
 ### Configure
 
@@ -93,7 +93,7 @@ export MYSQL_PASSWORD="your-mysql-password"
 ### Run the Server
 
 ```bash
-./bin/qa-gateway serve --config config.yaml
+./bin/agent-gateway serve --config config.yaml
 ```
 
 ### Connect a Client
@@ -101,7 +101,7 @@ export MYSQL_PASSWORD="your-mysql-password"
 On a developer or CI machine, run the client to create a local MCP endpoint:
 
 ```bash
-./bin/qa-gateway connect --server https://qa-gateway.example.com
+./bin/agent-gateway connect --server https://agent-gateway.example.com
 ```
 
 This opens a browser for Okta SSO login, then starts a local MCP proxy on `localhost:3000/mcp` that AI agents can connect to.
@@ -200,25 +200,25 @@ make docker
 Or manually:
 
 ```bash
-docker build -t qa-gateway:latest .
+docker build -t agent-gateway:latest .
 ```
 
 ### Run with Docker
 
 ```bash
 docker run -d \
-  --name qa-gateway \
+  --name agent-gateway \
   -p 443:443 \
   -p 80:80 \
-  -v $(pwd)/config.yaml:/etc/qa-gateway/config.yaml:ro \
-  -v qa-gateway-data:/var/lib/qa-gateway \
+  -v $(pwd)/config.yaml:/etc/agent-gateway/config.yaml:ro \
+  -v agent-gateway-data:/var/lib/agent-gateway \
   -e REDIS_PASSWORD="secret" \
   -e MONGO_PASSWORD="secret" \
   -e MYSQL_PASSWORD="secret" \
-  qa-gateway:latest
+  agent-gateway:latest
 ```
 
-The container runs as a non-root user (`gateway`, UID 1000). The metering SQLite database is stored in the `qa-gateway-data` volume at `/var/lib/qa-gateway/meter.db`.
+The container runs as a non-root user (`gateway`, UID 1000). The metering SQLite database is stored in the `agent-gateway-data` volume at `/var/lib/agent-gateway/meter.db`.
 
 ### Docker Compose
 
@@ -226,14 +226,14 @@ For production deployments, create a `docker-compose.yaml`:
 
 ```yaml
 services:
-  qa-gateway:
+  agent-gateway:
     build: .
     ports:
       - "443:443"
       - "80:80"
     volumes:
-      - ./config.yaml:/etc/qa-gateway/config.yaml:ro
-      - gateway-data:/var/lib/qa-gateway
+      - ./config.yaml:/etc/agent-gateway/config.yaml:ro
+      - gateway-data:/var/lib/agent-gateway
     env_file:
       - .env
     restart: unless-stopped

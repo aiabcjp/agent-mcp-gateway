@@ -1,4 +1,4 @@
-// Package main provides the CLI entry point for the qa-gateway binary. It uses
+// Package main provides the CLI entry point for the agent-gateway binary. It uses
 // Cobra to expose serve, connect, update, and version sub-commands.
 package main
 
@@ -31,7 +31,7 @@ var cfgFile string
 
 func main() {
 	rootCmd := &cobra.Command{
-		Use:   "qa-gateway",
+		Use:   "agent-gateway",
 		Short: "MCP gateway for secure QA resource access",
 	}
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "config.yaml", "config file path")
@@ -113,7 +113,7 @@ func serveCmd() *cobra.Command {
 			}
 
 			// 8. Create MCP server.
-			mcpSrv := mcp.NewServer("qa-gateway", Version, mgr, authz, meter, logger)
+			mcpSrv := mcp.NewServer("agent-gateway", Version, mgr, authz, meter, logger)
 
 			// 9. Create HTTP server.
 			httpSrv := server.New(cfg, mcpSrv, authn, meter, logger)
@@ -123,7 +123,7 @@ func serveCmd() *cobra.Command {
 			defer stop()
 
 			// 11. Start server.
-			logger.Info("starting qa-gateway", "version", Version)
+			logger.Info("starting agent-gateway", "version", Version)
 			return httpSrv.Start(ctx)
 		},
 	}
@@ -162,7 +162,7 @@ func versionCmd() *cobra.Command {
 		Use:   "version",
 		Short: "Print version information",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Printf("qa-gateway version %s\n", Version)
+			fmt.Printf("agent-gateway version %s\n", Version)
 		},
 	}
 }
