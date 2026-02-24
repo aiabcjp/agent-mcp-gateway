@@ -16,7 +16,7 @@ import (
 	"golang.zx2c4.com/wireguard/device"
 	"golang.zx2c4.com/wireguard/tun/netstack"
 
-	"qa-mcp-gateway/internal/config"
+	"agent-gateway/internal/config"
 )
 
 // Tunnel abstracts a network tunnel that can dial remote addresses.

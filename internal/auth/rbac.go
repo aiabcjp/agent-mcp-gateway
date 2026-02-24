@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"qa-mcp-gateway/internal/config"
+	"agent-gateway/internal/config"
 )
 
 // Authorizer decides whether a set of claims grants access to a resource

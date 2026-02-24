@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"qa-mcp-gateway/internal/config"
+	"agent-gateway/internal/config"
 )
 
 // ---------------------------------------------------------------------------

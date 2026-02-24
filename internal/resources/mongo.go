@@ -6,7 +6,7 @@ import (
 	"net"
 	"strings"
 
-	"qa-mcp-gateway/internal/config"
+	"agent-gateway/internal/config"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"

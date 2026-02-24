@@ -21,8 +21,8 @@ import (
 	"strings"
 	"time"
 
-	"qa-mcp-gateway/internal/config"
-	"qa-mcp-gateway/internal/resources"
+	"agent-gateway/internal/config"
+	"agent-gateway/internal/resources"
 )
 
 // BootstrapResponse is the response from the server's /api/bootstrap endpoint.

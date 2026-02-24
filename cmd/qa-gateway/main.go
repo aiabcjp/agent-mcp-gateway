@@ -13,14 +13,14 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"qa-mcp-gateway/internal/auth"
-	"qa-mcp-gateway/internal/client"
-	"qa-mcp-gateway/internal/config"
-	"qa-mcp-gateway/internal/mcp"
-	"qa-mcp-gateway/internal/metering"
-	"qa-mcp-gateway/internal/resources"
-	"qa-mcp-gateway/internal/server"
-	"qa-mcp-gateway/internal/tunnel"
+	"agent-gateway/internal/auth"
+	"agent-gateway/internal/client"
+	"agent-gateway/internal/config"
+	"agent-gateway/internal/mcp"
+	"agent-gateway/internal/metering"
+	"agent-gateway/internal/resources"
+	"agent-gateway/internal/server"
+	"agent-gateway/internal/tunnel"
 )
 
 // Version is set at build time via -ldflags.

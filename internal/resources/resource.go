@@ -8,7 +8,7 @@ import (
 	"net"
 	"strings"
 
-	"qa-mcp-gateway/internal/config"
+	"agent-gateway/internal/config"
 )
 
 // DialContextFunc is a function that dials a network connection, typically through a tunnel.

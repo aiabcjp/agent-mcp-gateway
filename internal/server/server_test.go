@@ -14,8 +14,8 @@ import (
 
 	gomcpserver "github.com/mark3labs/mcp-go/server"
 
-	"qa-mcp-gateway/internal/auth"
-	"qa-mcp-gateway/internal/config"
+	"agent-gateway/internal/auth"
+	"agent-gateway/internal/config"
 )
 
 // ---------------------------------------------------------------------------

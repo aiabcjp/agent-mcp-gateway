@@ -11,9 +11,9 @@ import (
 	gomcp "github.com/mark3labs/mcp-go/mcp"
 	gomcpserver "github.com/mark3labs/mcp-go/server"
 
-	"qa-mcp-gateway/internal/auth"
-	"qa-mcp-gateway/internal/metering"
-	"qa-mcp-gateway/internal/resources"
+	"agent-gateway/internal/auth"
+	"agent-gateway/internal/metering"
+	"agent-gateway/internal/resources"
 )
 
 // NewServer creates an MCPServer with all gateway tools registered. The tools

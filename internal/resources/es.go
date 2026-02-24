@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strings"
 
-	"qa-mcp-gateway/internal/config"
+	"agent-gateway/internal/config"
 
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esapi"

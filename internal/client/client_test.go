@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"qa-mcp-gateway/internal/config"
-	"qa-mcp-gateway/internal/resources"
+	"agent-gateway/internal/config"
+	"agent-gateway/internal/resources"
 )
 
 // ---------------------------------------------------------------------------
